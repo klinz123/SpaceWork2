@@ -1,0 +1,36 @@
+  // Register form state
+  const [selectedRol, setSelectedRol] = useState('USUARIO');
+  const [regData, setRegData] = useState({
+    nombre: '',
+    apellidoPaterno: '',
+    apellidoMaterno: '',
+    numeroDocumento: '',
+    correoElectronico: '',
+    telefono: '',
+    contrasena: ''
+  });
+
+  useEffect(() => {
+    if (localStorage.getItem('user')) {
+      navigate('/catalogo');
+    }
+  }, [navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+    try {
+      const response = await apiService.login(loginEmail, loginPass);
+      const data = response.data;
+      localStorage.setItem('token', data.accessToken);
+      localStorage.setItem('user', JSON.stringify(data.usuario));
+      setSuccessMessage('Ingreso exitoso. Redireccionando...');
+      setTimeout(() => {
+        navigate('/catalogo');
+      }, 1200);
+    } catch (err: any) {
+      setErrorMessage(err.response?.data?.error || 'Error al iniciar sesión.');
+    }
+  };
+
