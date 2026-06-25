@@ -30,8 +30,11 @@ public class AuditoriaAspect {
         String detalles = "Método: " + joinPoint.getSignature().getName();
         if (args != null && args.length > 0) {
             String argsStr = Arrays.toString(args);
-            // Sanitizar posibles contraseñas en los logs
-            argsStr = argsStr.replaceAll("(?i)contrase[nñ]a[=:][\\s'\"]*[^,}\\]]+", "contrasena=***FILTRADO***");
+            // Sanitizar múltiples campos sensibles en los logs
+            argsStr = argsStr.replaceAll("(?i)(contrase[nñ]a|password)[=:\\s'\"]*[^,}\\]]+", "$1=***FILTRADO***");
+            argsStr = argsStr.replaceAll("(?i)(token|jwt)[=:\\s'\"]*[^,}\\]]+", "$1=***FILTRADO***");
+            argsStr = argsStr.replaceAll("(?i)(tarjeta|cvv|creditcard)[=:\\s'\"]*[^,}\\]]+", "$1=***FILTRADO***");
+            argsStr = argsStr.replaceAll("(?i)(documento|dni|ruc)[=:\\s'\"]*[^,}\\]]+", "$1=***FILTRADO***");
             detalles += " | Argumentos: " + argsStr;
         }
 

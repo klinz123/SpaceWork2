@@ -71,6 +71,10 @@ public class Reserva {
     @Column(name = "Estado", nullable = false)
     private boolean estado = true;
 
+    @Version
+    @Column(name = "Version")
+    private Long version;
+
     @OneToMany(mappedBy = "reserva", fetch = FetchType.EAGER)
     private java.util.List<ReservaServicio> reservaServicios;
 

@@ -48,7 +48,8 @@ public class ResenaController {
     }
 
     @PostMapping
-    public ResponseEntity<?> crearResena(@RequestBody ResenaDTO dto) {
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> crearResena(@RequestBody ResenaDTO dto, org.springframework.security.core.Authentication authentication) {
         if (dto.calificacion == null || dto.calificacion < 1 || dto.calificacion > 5) {
             return ResponseEntity.badRequest().body(Map.of("error", "La calificación debe estar entre 1 y 5."));
         }
@@ -56,6 +57,11 @@ public class ResenaController {
         Reserva reserva = reservaRepository.findById(dto.reservaId).orElse(null);
         if (reserva == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Reserva no encontrada."));
+        }
+
+        com.spacework.crm.model.Usuario usuarioAutenticado = (com.spacework.crm.model.Usuario) authentication.getPrincipal();
+        if (!reserva.getUsuario().getId().equals(usuarioAutenticado.getId())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "No puedes reseñar una reserva que no te pertenece."));
         }
 
         // Verificar si la reserva ya tiene reseña

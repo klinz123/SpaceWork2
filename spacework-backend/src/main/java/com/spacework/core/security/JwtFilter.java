@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -42,6 +43,18 @@ public class JwtFilter extends OncePerRequestFilter {
             token = authHeader.substring(7);
             if (jwtTokenProvider.validateToken(token)) {
                 email = jwtTokenProvider.getEmailFromToken(token);
+            }
+        }
+        
+        if (token == null && request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("jwt".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    if (jwtTokenProvider.validateToken(token)) {
+                        email = jwtTokenProvider.getEmailFromToken(token);
+                    }
+                    break;
+                }
             }
         }
 

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(origins = "*")
+
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -37,8 +37,14 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarPerfil(@PathVariable Integer id, @RequestBody Usuario usuarioActualizado) {
+    public ResponseEntity<?> actualizarPerfil(@PathVariable Integer id, @RequestBody Usuario usuarioActualizado, org.springframework.security.core.Authentication authentication) {
         try {
+            Usuario usuarioAutenticado = (Usuario) authentication.getPrincipal();
+            boolean isAdmin = usuarioAutenticado.getRol() != null && 
+                (usuarioAutenticado.getRol().getNombreRol().equals("ADMIN") || usuarioAutenticado.getRol().getNombreRol().equals("SUPERADMIN"));
+            if (!isAdmin && !usuarioAutenticado.getId().equals(id)) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+            }
             Usuario usuario = usuarioService.actualizarPerfil(id, usuarioActualizado);
             return ResponseEntity.ok(modelMapper.map(usuario, UsuarioResponseDTO.class));
         } catch (IllegalArgumentException e) {
@@ -47,8 +53,14 @@ public class UsuarioController {
     }
 
     @PostMapping("/{id}/cambiar-contrasena")
-    public ResponseEntity<?> cambiarContrasena(@PathVariable Integer id, @RequestBody java.util.Map<String, String> request) {
+    public ResponseEntity<?> cambiarContrasena(@PathVariable Integer id, @RequestBody java.util.Map<String, String> request, org.springframework.security.core.Authentication authentication) {
         try {
+            Usuario usuarioAutenticado = (Usuario) authentication.getPrincipal();
+            boolean isAdmin = usuarioAutenticado.getRol() != null && 
+                (usuarioAutenticado.getRol().getNombreRol().equals("ADMIN") || usuarioAutenticado.getRol().getNombreRol().equals("SUPERADMIN"));
+            if (!isAdmin && !usuarioAutenticado.getId().equals(id)) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body("{\"error\": \"No puedes cambiar la contraseña de otro usuario.\"}");
+            }
             String contrasenaActual = request.get("contrasenaActual");
             String nuevaContrasena = request.get("nuevaContrasena");
             usuarioService.cambiarContrasena(id, contrasenaActual, nuevaContrasena);

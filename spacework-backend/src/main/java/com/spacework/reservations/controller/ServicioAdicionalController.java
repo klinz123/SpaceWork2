@@ -5,12 +5,13 @@ import com.spacework.reservations.service.ServicioAdicionalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/servicios-adicionales")
-@CrossOrigin(origins = "*")
+
 public class ServicioAdicionalController {
 
     @Autowired
@@ -36,11 +37,13 @@ public class ServicioAdicionalController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public ServicioAdicional create(@RequestBody ServicioAdicional servicio) {
         return servicioAdicionalService.createServicio(servicio);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public ResponseEntity<ServicioAdicional> update(@PathVariable Integer id, @RequestBody ServicioAdicional servicio) {
         ServicioAdicional updated = servicioAdicionalService.updateServicio(id, servicio);
         if (updated != null) {
@@ -50,6 +53,7 @@ public class ServicioAdicionalController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         servicioAdicionalService.deleteServicio(id);
         return ResponseEntity.noContent().build();

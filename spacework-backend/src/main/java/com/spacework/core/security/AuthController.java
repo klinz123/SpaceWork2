@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.modelmapper.ModelMapper;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import com.spacework.crm.dto.request.UsuarioLoginRequestDTO;
 import com.spacework.crm.dto.request.UsuarioRegistroRequestDTO;
 import com.spacework.crm.dto.response.UsuarioResponseDTO;
@@ -19,7 +21,7 @@ import com.spacework.auditoria.aop.Auditable;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
+
 public class AuthController {
 
     private final UsuarioService usuarioService;
@@ -53,7 +55,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @Auditable(accion = "LOGIN_USUARIO", entidad = "Usuarios")
-    public ResponseEntity<?> login(@RequestBody UsuarioLoginRequestDTO requestDTO) {
+    public ResponseEntity<?> login(@RequestBody UsuarioLoginRequestDTO requestDTO, HttpServletResponse httpResponse) {
         String correo = requestDTO.getCorreoElectronico();
         String contrasena = requestDTO.getContrasena();
 
@@ -75,6 +77,12 @@ public class AuthController {
                 usuarioService.resetearIntentos(correo);
                 Usuario usuario = usuarioOpt.get();
                 String token = jwtTokenProvider.generateToken(usuario.getCorreoElectronico(), usuario.getRol().getNombreRol());
+                
+                Cookie cookie = new Cookie("jwt", token);
+                cookie.setHttpOnly(true);
+                cookie.setPath("/");
+                cookie.setMaxAge(10 * 60 * 60); // 10 horas
+                httpResponse.addCookie(cookie);
                 
                 Map<String, Object> response = new HashMap<>();
                 response.put("accessToken", token);

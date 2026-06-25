@@ -39,15 +39,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
-  const login = (userData: User, token: string) => {
-    sessionStorage.setItem('token', token);
+  const login = (userData: User, _token: string) => {
+    // Ya no guardamos el token manualmente, se usa la Cookie HttpOnly
     sessionStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     setRole(userData.rol?.nombreRol || null);
   };
 
   const logout = () => {
-    sessionStorage.removeItem('token');
+    // Aquí idealmente llamaríamos a un endpoint /logout para que el backend borre la cookie
     sessionStorage.removeItem('user');
     setUser(null);
     setRole(null);

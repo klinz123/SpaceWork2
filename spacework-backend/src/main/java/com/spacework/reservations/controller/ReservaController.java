@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/reservas")
-@CrossOrigin(origins = "*")
+
 public class ReservaController {
 
     private final ReservaService reservaService;

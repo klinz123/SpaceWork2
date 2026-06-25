@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
 import java.util.Map;
 import org.modelmapper.ModelMapper;
@@ -24,7 +25,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/espacios")
-@CrossOrigin(origins = "*")
+
 public class EspacioController {
 
     private final EspacioRepository espacioRepository;
@@ -96,6 +97,7 @@ public class EspacioController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public ResponseEntity<?> crear(@RequestBody EspacioRequestDTO requestDTO) {
         try {
             Espacio espacio = modelMapper.map(requestDTO, Espacio.class);
@@ -192,6 +194,7 @@ public class EspacioController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody EspacioRequestDTO requestDTO) {
         try {
             Espacio espacioData = modelMapper.map(requestDTO, Espacio.class);
@@ -293,6 +296,7 @@ public class EspacioController {
 
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public ResponseEntity<?> eliminar(@PathVariable Integer id) {
         try {
             Espacio espacio = espacioRepository.findById(id)

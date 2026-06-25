@@ -4,14 +4,12 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('token');
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  
+  // La cookie HttpOnly se enviará automáticamente gracias a withCredentials: true
+  // Ya no inyectamos el token en los headers manualmente
   if (config.headers) {
     config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
     config.headers['Pragma'] = 'no-cache';
@@ -35,7 +33,7 @@ api.interceptors.response.use((response) => {
   return response;
 }, (error) => {
   if (error.response && error.response.status === 401) {
-    sessionStorage.removeItem('token');
+    // El backend podría limpiar la cookie en logout, pero en el frontend solo borramos el usuario
     sessionStorage.removeItem('user');
     window.location.href = '/login';
   }

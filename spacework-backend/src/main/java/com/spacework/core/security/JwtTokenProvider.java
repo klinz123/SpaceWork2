@@ -15,11 +15,20 @@ import java.util.Map;
 @Component
 public class JwtTokenProvider {
 
-    private final String secretString = System.getenv("JWT_SECRET") != null 
-            ? System.getenv("JWT_SECRET") 
-            : "spaceworkSecretKeyForJWTSecurity2026Token!";
-    private final SecretKey key = Keys.hmacShaKeyFor(secretString.getBytes(StandardCharsets.UTF_8));
+    private final SecretKey key;
     private final long validityInMilliseconds = 86400000; // 24 hours
+
+    public JwtTokenProvider() {
+        String secretString = System.getenv("JWT_SECRET");
+        if (secretString == null || secretString.trim().isEmpty()) {
+            // Check if there's a property for local dev, otherwise throw
+            throw new IllegalStateException("FATAL: La variable de entorno JWT_SECRET no está configurada.");
+        }
+        if (secretString.length() < 32) {
+            throw new IllegalStateException("FATAL: JWT_SECRET debe tener al menos 32 caracteres para HS256.");
+        }
+        this.key = Keys.hmacShaKeyFor(secretString.getBytes(StandardCharsets.UTF_8));
+    }
 
     public String generateToken(String email, String role) {
         Date now = new Date();

@@ -5,13 +5,14 @@ import com.spacework.reservations.repository.UbicacionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/ubicaciones")
-@CrossOrigin(origins = "*")
+
 public class UbicacionController {
 
     @Autowired
@@ -23,12 +24,14 @@ public class UbicacionController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public Ubicacion create(@RequestBody Ubicacion ubicacion) {
         ubicacion.setEstado(true);
         return ubicacionRepository.save(ubicacion);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public ResponseEntity<Ubicacion> update(@PathVariable Integer id, @RequestBody Ubicacion ubicacionData) {
         Optional<Ubicacion> opt = ubicacionRepository.findById(id);
         if (opt.isPresent()) {
@@ -47,6 +50,7 @@ public class UbicacionController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         Optional<Ubicacion> opt = ubicacionRepository.findById(id);
         if (opt.isPresent()) {
