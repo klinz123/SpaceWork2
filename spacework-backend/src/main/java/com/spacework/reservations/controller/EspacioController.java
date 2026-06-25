@@ -7,6 +7,8 @@ import com.spacework.reservations.repository.TipoEspacioRepository;
 import com.spacework.reservations.repository.UbicacionRepository;
 import com.spacework.reservations.repository.CaracteristicaRepository;
 import com.spacework.reservations.repository.PrecioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/espacios")
@@ -34,6 +37,7 @@ public class EspacioController {
     private final CaracteristicaRepository caracteristicaRepository;
     private final PrecioRepository precioRepository;
     private final ModelMapper modelMapper;
+    private static final Logger logger = LoggerFactory.getLogger(EspacioController.class);
 
     @Autowired
     public EspacioController(EspacioRepository espacioRepository,
@@ -98,7 +102,7 @@ public class EspacioController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
-    public ResponseEntity<?> crear(@RequestBody EspacioRequestDTO requestDTO) {
+    public ResponseEntity<?> crear(@Valid @RequestBody EspacioRequestDTO requestDTO) {
         try {
             Espacio espacio = modelMapper.map(requestDTO, Espacio.class);
             // Autogeneración inteligente del Código de Espacio
@@ -195,7 +199,7 @@ public class EspacioController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody EspacioRequestDTO requestDTO) {
+    public ResponseEntity<?> actualizar(@PathVariable Integer id, @Valid @RequestBody EspacioRequestDTO requestDTO) {
         try {
             Espacio espacioData = modelMapper.map(requestDTO, Espacio.class);
             Espacio espacio = espacioRepository.findById(id)
@@ -281,11 +285,7 @@ public class EspacioController {
 
             return ResponseEntity.ok(modelMapper.map(actualizado, EspacioResponseDTO.class));
         } catch (Exception e) {
-            e.printStackTrace();
-            
-            // Capture full stack trace for diagnostics
-            java.io.StringWriter sw = new java.io.StringWriter();
-            e.printStackTrace(new java.io.PrintWriter(sw));
+            logger.error("Error al actualizar el espacio: ", e);
 
             Map<String, String> err = new HashMap<>();
             err.put("error", e.getMessage());

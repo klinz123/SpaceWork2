@@ -3,6 +3,8 @@ package com.spacework.crm.dto.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.Valid;
 
 public class UsuarioRegistroRequestDTO {
     @NotBlank(message = "El nombre es obligatorio")
@@ -18,15 +20,20 @@ public class UsuarioRegistroRequestDTO {
     private String correoElectronico;
     
     @NotBlank(message = "El número de documento es obligatorio")
+    @Size(min = 8, max = 20, message = "El documento debe tener entre 8 y 20 caracteres")
     private String numeroDocumento;
     
+    @Pattern(regexp = "^[\\d\\s\\+\\-\\(\\)]+$", message = "Formato de teléfono inválido")
+    @Size(min = 6, max = 20, message = "El teléfono debe tener entre 6 y 20 caracteres")
     private String telefono;
     
     @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$", message = "La contraseña debe contener al menos una mayúscula, un número y un carácter especial.")
     private String contrasena;
     
     // Opcionales para empresa
+    @Valid
     private EmpresaRegistroDTO empresa;
 
     public UsuarioRegistroRequestDTO() {}
@@ -56,8 +63,16 @@ public class UsuarioRegistroRequestDTO {
     public void setEmpresa(EmpresaRegistroDTO empresa) { this.empresa = empresa; }
 
     public static class EmpresaRegistroDTO {
+        @NotBlank(message = "El documento fiscal es obligatorio")
+        @Size(max = 20, message = "El documento fiscal no debe exceder 20 caracteres")
         private String documentoFiscal;
+        
+        @NotBlank(message = "La razón social es obligatoria")
+        @Size(max = 150, message = "La razón social no debe exceder 150 caracteres")
         private String razonSocial;
+        
+        @NotBlank(message = "La dirección es obligatoria")
+        @Size(max = 250, message = "La dirección no debe exceder 250 caracteres")
         private String direccion;
 
         public String getDocumentoFiscal() { return documentoFiscal; }

@@ -55,7 +55,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @Auditable(accion = "LOGIN_USUARIO", entidad = "Usuarios")
-    public ResponseEntity<?> login(@RequestBody UsuarioLoginRequestDTO requestDTO, HttpServletResponse httpResponse) {
+    public ResponseEntity<?> login(@Valid @RequestBody UsuarioLoginRequestDTO requestDTO, HttpServletResponse httpResponse) {
         String correo = requestDTO.getCorreoElectronico();
         String contrasena = requestDTO.getContrasena();
 
@@ -66,7 +66,7 @@ public class AuthController {
         // guava Cache Rate Limiting / Security block check
         if (loginAttemptService.isBlocked(correo)) {
             Map<String, String> error = new HashMap<>();
-            error.put("error", "Cuenta bloqueada por seguridad. Contacte al administrador.");
+            error.put("error", "Credenciales inválidas o cuenta bloqueada.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
         }
 
@@ -92,13 +92,26 @@ public class AuthController {
                 loginAttemptService.loginFailed(correo);
                 usuarioService.incrementarIntentosFallidos(correo);
                 Map<String, String> error = new HashMap<>();
-                error.put("error", "Credenciales incorrectas.");
+                error.put("error", "Credenciales inválidas.");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
             }
         } catch (IllegalArgumentException e) {
             Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
+            error.put("error", "Credenciales inválidas.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse httpResponse) {
+        Cookie cookie = new Cookie("jwt", null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // Expira inmediatamente
+        httpResponse.addCookie(cookie);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("mensaje", "Sesión cerrada correctamente.");
+        return ResponseEntity.ok(response);
     }
 }

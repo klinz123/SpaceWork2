@@ -22,6 +22,7 @@ import org.modelmapper.ModelMapper;
 import com.spacework.reservations.dto.request.ReservaRequestDTO;
 import com.spacework.reservations.dto.response.ReservaResponseDTO;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -73,7 +74,7 @@ public class ReservaController {
     }
 
     @PostMapping("/crear")
-    public ResponseEntity<?> crearReserva(@RequestBody ReservaRequestDTO body) {
+    public ResponseEntity<?> crearReserva(@Valid @RequestBody ReservaRequestDTO body) {
         try {
             Integer usuarioId = body.getUsuarioId();
             Integer espacioId = body.getEspacioId();

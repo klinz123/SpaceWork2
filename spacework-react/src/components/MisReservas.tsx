@@ -316,10 +316,35 @@ const MisReservas: React.FC = () => {
     setExtraForm(prev => ({ ...prev, exp: input }));
   };
 
+  const isValidLuhn = (num: string) => {
+    const cleanNum = num.replace(/\D/g, '');
+    if (!cleanNum) return false;
+    let sum = 0;
+    let isEven = false;
+    for (let i = cleanNum.length - 1; i >= 0; i--) {
+      let digit = parseInt(cleanNum.charAt(i), 10);
+      if (isEven) {
+        digit *= 2;
+        if (digit > 9) {
+          digit -= 9;
+        }
+      }
+      sum += digit;
+      isEven = !isEven;
+    }
+    return sum % 10 === 0;
+  };
+
   const procesarPago = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccessMessage('');
     setErrorMessage('');
+
+    if (metodoPago === 'card' && !isValidLuhn(pagoForm.nroTarjeta)) {
+      setErrorMessage('El número de tarjeta es inválido.');
+      setTimeout(() => setErrorMessage(''), 4000);
+      return;
+    }
 
     const formaPagoId = metodoPago === 'card' ? 1 : 3;
 
@@ -505,6 +530,11 @@ const MisReservas: React.FC = () => {
 
       // 2. Si está confirmada, procesamos el pago por el total extra
       if (isConfirmada) {
+         if (!isValidLuhn(extraForm.nroTarjeta)) {
+           setErrorMessage('El número de tarjeta es inválido.');
+           setTimeout(() => setErrorMessage(''), 4000);
+           return;
+         }
          const granTotal = calcularTotalExtras();
          const ref = 'CARD-' + extraForm.nroTarjeta.slice(-4) + '-' + Math.floor(Math.random()*10000);
          const datosTarjeta = `${extraForm.nombreTarjeta}|${extraForm.nroTarjeta}|${extraForm.exp}`;

@@ -254,11 +254,14 @@ const Configuracion: React.FC = () => {
                   </div>
                   <div className="col-md-6">
                     <label className="form-label small text-muted">Nueva Contraseña</label>
-                    <input type="password" className="form-control" value={pwdForm.nuevaContrasena} onChange={e => setPwdForm({...pwdForm, nuevaContrasena: e.target.value})} required minLength={6} />
+                    <input type="password" className="form-control" value={pwdForm.nuevaContrasena} onChange={e => setPwdForm({...pwdForm, nuevaContrasena: e.target.value})} required minLength={8} 
+                           pattern="(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_.\-])[A-Za-z\d@$!%*?&_.\-]{8,}"
+                           title="La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial (@$!%*?&_.-)" />
                   </div>
                   <div className="col-md-6">
                     <label className="form-label small text-muted">Confirmar Nueva Contraseña</label>
-                    <input type="password" className="form-control" value={pwdForm.confirmarContrasena} onChange={e => setPwdForm({...pwdForm, confirmarContrasena: e.target.value})} required minLength={6} />
+                    <input type="password" className="form-control" value={pwdForm.confirmarContrasena} onChange={e => setPwdForm({...pwdForm, confirmarContrasena: e.target.value})} required minLength={8}
+                           pattern="(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_.\-])[A-Za-z\d@$!%*?&_.\-]{8,}" />
                   </div>
                   <div className="col-12 mt-3 d-flex gap-2 justify-content-end">
                     <button type="button" className="btn btn-outline-secondary btn-sm px-3" onClick={() => setCambiandoContrasena(false)}>Cancelar</button>

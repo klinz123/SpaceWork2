@@ -35,11 +35,6 @@ public class Pago {
     @Column(name = "EstadoPago", length = 20, nullable = false)
     private String estadoPago = "PENDIENTE";
 
-    @JsonIgnore
-    @org.hibernate.annotations.JdbcTypeCode(java.sql.Types.VARBINARY)
-    @Column(name = "DatosTarjeta", columnDefinition = "VARBINARY(MAX)")
-    private byte[] datosTarjeta;
-
     @Column(name = "Estado", nullable = false)
     private boolean estado = true;
 
@@ -101,14 +96,6 @@ public class Pago {
 
     public void setEstadoPago(String estadoPago) {
         this.estadoPago = estadoPago;
-    }
-
-    public byte[] getDatosTarjeta() {
-        return datosTarjeta;
-    }
-
-    public void setDatosTarjeta(byte[] datosTarjeta) {
-        this.datosTarjeta = datosTarjeta;
     }
 
     public boolean isEstado() {
