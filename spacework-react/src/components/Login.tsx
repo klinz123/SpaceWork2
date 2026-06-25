@@ -257,9 +257,9 @@ const Login: React.FC = () => {
                 </div>
                 <div className="col-12">
                   <label className="form-label small text-uppercase fw-semibold mb-1" style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Contraseña</label>
-                  <input type="password" className="form-control form-control-sm py-2 shadow-none login-input" required minLength={6}
-                         pattern="(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_.\-])[A-Za-z\d@$!%*?&_.\-]{6,}"
-                         title="La contraseña debe tener al menos 6 caracteres, 1 mayúscula, 1 número y 1 carácter especial (@$!%*?&_.-)"
+                  <input type="password" className="form-control form-control-sm py-2 shadow-none login-input" required minLength={8}
+                         pattern="(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_.\-])[A-Za-z\d@$!%*?&_.\-]{8,}"
+                         title="La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial (@$!%*?&_.-)"
                          value={regData.contrasena} onChange={(e) => setRegData({...regData, contrasena: e.target.value})} />
                 </div>
               </div>

@@ -7,6 +7,8 @@ import com.spacework.reservations.repository.TipoEspacioRepository;
 import com.spacework.reservations.repository.UbicacionRepository;
 import com.spacework.reservations.repository.CaracteristicaRepository;
 import com.spacework.reservations.repository.PrecioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +37,7 @@ public class EspacioController {
     private final CaracteristicaRepository caracteristicaRepository;
     private final PrecioRepository precioRepository;
     private final ModelMapper modelMapper;
+    private static final Logger logger = LoggerFactory.getLogger(EspacioController.class);
 
     @Autowired
     public EspacioController(EspacioRepository espacioRepository,
@@ -282,11 +285,7 @@ public class EspacioController {
 
             return ResponseEntity.ok(modelMapper.map(actualizado, EspacioResponseDTO.class));
         } catch (Exception e) {
-            e.printStackTrace();
-            
-            // Capture full stack trace for diagnostics
-            java.io.StringWriter sw = new java.io.StringWriter();
-            e.printStackTrace(new java.io.PrintWriter(sw));
+            logger.error("Error al actualizar el espacio: ", e);
 
             Map<String, String> err = new HashMap<>();
             err.put("error", e.getMessage());

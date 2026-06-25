@@ -45,6 +45,12 @@ public class PagoService {
         Reserva reserva = reservaRepository.findById(reservaId)
                 .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada."));
 
+        if (!"CONFIRMADA".equalsIgnoreCase(reserva.getEstadoReserva().getNombreEstado()) && !"FINALIZADA".equalsIgnoreCase(reserva.getEstadoReserva().getNombreEstado())) {
+            if (monto.compareTo(reserva.getMontoTotal()) < 0) {
+                throw new IllegalArgumentException("El monto de pago no cubre el total de la reserva.");
+            }
+        }
+
         FormaPago formaPago = formaPagoRepository.findById(formaPagoId)
                 .orElseThrow(() -> new IllegalArgumentException("Forma de pago no encontrada."));
 
@@ -75,9 +81,7 @@ public class PagoService {
         pago.setEstadoPago(esPagoInmediato ? "PAGADO" : "PENDIENTE_VERIFICACION");
         pago.setEstado(true);
 
-        if (datosTarjeta != null) {
-            pago.setDatosTarjeta(datosTarjeta.getBytes());
-        }
+        // DatosTarjeta ya no se guarda en la base de datos por cumplimiento PCI DSS
 
         return pagoRepository.save(pago);
     }
