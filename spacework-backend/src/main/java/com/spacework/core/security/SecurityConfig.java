@@ -36,7 +36,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/espacios/**", "/api/espacios", "/api/ubicaciones", "/api/resenas/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/espacios/**", "/api/espacios", "/api/ubicaciones", "/api/resenas/**", "/api/caracteristicas", "/api/servicios-adicionales").permitAll()
                 .requestMatchers("/api/espacios/**", "/api/espacios").hasAnyRole("SUPERADMIN", "ADMIN")
                 .requestMatchers("/api/reservas/**", "/api/reservas", "/api/pagos/**", "/api/pagos", "/api/reportes/**", "/api/reportes", "/api/usuarios/**", "/api/usuarios").authenticated()
                 .anyRequest().authenticated()
@@ -53,7 +53,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
-        configuration.setAllowCredentials(false);
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

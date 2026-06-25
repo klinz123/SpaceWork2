@@ -180,7 +180,7 @@ const Catalogo: React.FC = () => {
       return [{
         id: -1,
         nombreEspacio: "ERROR_EN_FILTRO",
-        descripcion: String(e?.stack || e),
+        descripcion: "Error al filtrar espacios. Contacte al administrador.",
         precio: 0,
         descuento: 0,
         estadoEspacio: 'DISPONIBLE',
@@ -536,11 +536,33 @@ const Catalogo: React.FC = () => {
               </div>
               <div className="card-body p-0">
                 {sedeSeleccionada.urlGoogleMaps && sedeSeleccionada.urlGoogleMaps.includes('<iframe') ? (
-                  <div 
-                    className="w-100" 
-                    style={{ height: '350px' }}
-                    dangerouslySetInnerHTML={{ __html: sedeSeleccionada.urlGoogleMaps }}
-                  />
+                  (() => {
+                    const sanitizarIframeUrl = (url: string): string | null => {
+                      if (!url) return null;
+                      const match = url.match(/src="([^"]+)"/);
+                      if (!match) return null;
+                      const src = match[1];
+                      if (src.startsWith('https://maps.google.com') || src.startsWith('https://www.google.com/maps')) {
+                        return src;
+                      }
+                      return null;
+                    };
+                    const safeSrc = sanitizarIframeUrl(sedeSeleccionada.urlGoogleMaps);
+                    return safeSrc ? (
+                      <div className="w-100" style={{ height: '350px' }}>
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          frameBorder="0"
+                          style={{ border: 0 }}
+                          src={safeSrc}
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-muted p-3 text-center">Mapa no disponible (URL inválida)</p>
+                    );
+                  })()
                 ) : (
                   <div className="w-100 position-relative" style={{ height: '350px' }}>
                     <iframe 
@@ -628,7 +650,7 @@ const Catalogo: React.FC = () => {
         <h2 className="text-danger">Error Inesperado en Catálogo</h2>
         <p className="lead">Ocurrió un error al cargar la vista:</p>
         <pre className="text-start bg-light p-4 rounded text-danger border mt-4" style={{ whiteSpace: 'pre-wrap' }}>
-          {error?.stack || String(error)}
+          Ha ocurrido un error inesperado. Contacte al administrador.
         </pre>
       </div>
     );

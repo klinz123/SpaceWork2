@@ -5,13 +5,14 @@ import com.spacework.reservations.repository.CaracteristicaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/caracteristicas")
-@CrossOrigin(origins = "*")
+
 public class CaracteristicaController {
 
     @Autowired
@@ -23,12 +24,14 @@ public class CaracteristicaController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public Caracteristica create(@RequestBody Caracteristica caracteristica) {
         caracteristica.setEstado(true);
         return caracteristicaRepository.save(caracteristica);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public ResponseEntity<Caracteristica> update(@PathVariable Integer id, @RequestBody Caracteristica caracteristicaData) {
         Optional<Caracteristica> opt = caracteristicaRepository.findById(id);
         if (opt.isPresent()) {
@@ -43,6 +46,7 @@ public class CaracteristicaController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         Optional<Caracteristica> opt = caracteristicaRepository.findById(id);
         if (opt.isPresent()) {

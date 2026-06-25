@@ -39,12 +39,10 @@ public class UsuarioService {
     @Transactional
     public Usuario registrarUsuario(Usuario usuario, String nombreRol, String abreviaturaDocumento) {
         // validamos usando apache commons lang3 para mayor robustez
-        if (StringUtils.isBlank(usuario.getCorreoElectronico()) || StringUtils.isBlank(usuario.getContrasena())) {
-            throw new IllegalArgumentException("El correo y la contraseña no pueden estar vacíos.");
+        if (StringUtils.isBlank(usuario.getCorreoElectronico())) {
+            throw new IllegalArgumentException("El correo no puede estar vacío.");
         }
-        if (usuario.getContrasena().length() < 6) {
-            throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres.");
-        }
+        validarContrasenaFuerte(usuario.getContrasena());
 
         // Validación estricta de documentos
         if ("DNI".equalsIgnoreCase(abreviaturaDocumento) && (usuario.getNumeroDocumento() == null || !usuario.getNumeroDocumento().matches("^[0-9]{8}$"))) {
@@ -144,6 +142,8 @@ public class UsuarioService {
             throw new IllegalArgumentException("La contraseña actual es incorrecta");
         }
         
+        validarContrasenaFuerte(nuevaContrasena);
+        
         usuario.setContrasena(passwordEncoder.encode(nuevaContrasena));
         usuarioRepository.save(usuario);
     }
@@ -221,5 +221,23 @@ public class UsuarioService {
         usuario.setBloqueado(false);
         usuario.setIntentosFallidos(0);
         usuarioRepository.save(usuario);
+    }
+
+    private void validarContrasenaFuerte(String contrasena) {
+        if (StringUtils.isBlank(contrasena)) {
+            throw new IllegalArgumentException("La contraseña no puede estar vacía.");
+        }
+        if (contrasena.length() < 8) {
+            throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres.");
+        }
+        if (!contrasena.matches(".*[A-Z].*")) {
+            throw new IllegalArgumentException("La contraseña debe contener al menos una letra mayúscula.");
+        }
+        if (!contrasena.matches(".*[0-9].*")) {
+            throw new IllegalArgumentException("La contraseña debe contener al menos un número.");
+        }
+        if (!contrasena.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
+            throw new IllegalArgumentException("La contraseña debe contener al menos un símbolo especial.");
+        }
     }
 }
