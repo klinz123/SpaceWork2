@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/espacios")
@@ -98,7 +99,7 @@ public class EspacioController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
-    public ResponseEntity<?> crear(@RequestBody EspacioRequestDTO requestDTO) {
+    public ResponseEntity<?> crear(@Valid @RequestBody EspacioRequestDTO requestDTO) {
         try {
             Espacio espacio = modelMapper.map(requestDTO, Espacio.class);
             // Autogeneración inteligente del Código de Espacio
@@ -195,7 +196,7 @@ public class EspacioController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody EspacioRequestDTO requestDTO) {
+    public ResponseEntity<?> actualizar(@PathVariable Integer id, @Valid @RequestBody EspacioRequestDTO requestDTO) {
         try {
             Espacio espacioData = modelMapper.map(requestDTO, Espacio.class);
             Espacio espacio = espacioRepository.findById(id)

@@ -306,10 +306,35 @@ const Reserva: React.FC = () => {
     setPagoForm(prev => ({ ...prev, exp: input }));
   };
 
+  const isValidLuhn = (num: string) => {
+    const cleanNum = num.replace(/\D/g, '');
+    if (!cleanNum) return false;
+    let sum = 0;
+    let isEven = false;
+    for (let i = cleanNum.length - 1; i >= 0; i--) {
+      let digit = parseInt(cleanNum.charAt(i), 10);
+      if (isEven) {
+        digit *= 2;
+        if (digit > 9) {
+          digit -= 9;
+        }
+      }
+      sum += digit;
+      isEven = !isEven;
+    }
+    return sum % 10 === 0;
+  };
+
   const confirmarPagoYCrearReserva = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
+    
+    if (metodoPago === 'card' && !isValidLuhn(pagoForm.nroTarjeta)) {
+      setErrorMessage('El número de tarjeta es inválido.');
+      return;
+    }
+
     setCargando(true);
 
     const reservaData = {

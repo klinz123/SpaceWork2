@@ -55,7 +55,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @Auditable(accion = "LOGIN_USUARIO", entidad = "Usuarios")
-    public ResponseEntity<?> login(@RequestBody UsuarioLoginRequestDTO requestDTO, HttpServletResponse httpResponse) {
+    public ResponseEntity<?> login(@Valid @RequestBody UsuarioLoginRequestDTO requestDTO, HttpServletResponse httpResponse) {
         String correo = requestDTO.getCorreoElectronico();
         String contrasena = requestDTO.getContrasena();
 
