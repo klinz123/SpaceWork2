@@ -5,6 +5,7 @@ import com.spacework.crm.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,12 +37,11 @@ public class AuthController {
 
     @PostMapping("/registro")
     @Auditable(accion = "REGISTRO_USUARIO", entidad = "Usuarios")
-    public ResponseEntity<?> registrar(@RequestBody UsuarioRegistroRequestDTO requestDTO, 
-                                       @RequestParam(defaultValue = "CLIENTE") String rol,
+    public ResponseEntity<?> registrar(@Valid @RequestBody UsuarioRegistroRequestDTO requestDTO, 
                                        @RequestParam(defaultValue = "DNI") String tipoDoc) {
         try {
             Usuario usuario = modelMapper.map(requestDTO, Usuario.class);
-            Usuario nuevoUsuario = usuarioService.registrarUsuario(usuario, rol, tipoDoc);
+            Usuario nuevoUsuario = usuarioService.registrarUsuario(usuario, "CLIENTE", tipoDoc);
             UsuarioResponseDTO responseDTO = modelMapper.map(nuevoUsuario, UsuarioResponseDTO.class);
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
         } catch (IllegalArgumentException e) {

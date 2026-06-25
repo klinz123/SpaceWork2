@@ -27,8 +27,6 @@ import java.util.Set;
 @CrossOrigin(origins = "*")
 public class EspacioController {
 
-    private static String lastErrorStr = "No errors yet";
-
     private final EspacioRepository espacioRepository;
     private final TipoEspacioRepository tipoEspacioRepository;
     private final UbicacionRepository ubicacionRepository;
@@ -285,7 +283,6 @@ public class EspacioController {
             // Capture full stack trace for diagnostics
             java.io.StringWriter sw = new java.io.StringWriter();
             e.printStackTrace(new java.io.PrintWriter(sw));
-            lastErrorStr = sw.toString();
 
             Map<String, String> err = new HashMap<>();
             err.put("error", e.getMessage());
@@ -293,10 +290,7 @@ public class EspacioController {
         }
     }
 
-    @GetMapping("/lasterror")
-    public ResponseEntity<String> getLastError() {
-        return ResponseEntity.ok(lastErrorStr);
-    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Integer id) {

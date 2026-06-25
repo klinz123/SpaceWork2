@@ -1,13 +1,31 @@
 package com.spacework.crm.dto.request;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class UsuarioRegistroRequestDTO {
+    @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
+    
+    @NotBlank(message = "El apellido paterno es obligatorio")
     private String apellidoPaterno;
+    
     private String apellidoMaterno;
+    
+    @NotBlank(message = "El correo es obligatorio")
+    @Email(message = "Formato de correo inválido")
     private String correoElectronico;
+    
+    @NotBlank(message = "El número de documento es obligatorio")
     private String numeroDocumento;
+    
     private String telefono;
+    
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
     private String contrasena;
+    
     // Opcionales para empresa
     private EmpresaRegistroDTO empresa;
 

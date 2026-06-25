@@ -4,6 +4,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { apiService } from '../services/api';
 import TermsModal from './TermsModal';
+import type { Espacio, ServicioAdicional } from '../types';
 
 const Reserva: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,7 +17,7 @@ const Reserva: React.FC = () => {
   const [asistentes, setAsistentes] = useState<number>(1);
   const [descuentoMonto, setDescuentoMonto] = useState<number>(0);
   const [subtotalOriginal, setSubtotalOriginal] = useState<number>(0);
-  const [espacio, setEspacio] = useState<any>(null);
+  const [espacio, setEspacio] = useState<Espacio | null>(null);
 
   const [fechaInicio, setFechaInicio] = useState<Date | null>(null);
   const [fechaFin, setFechaFin] = useState<Date | null>(null);
@@ -30,11 +31,11 @@ const Reserva: React.FC = () => {
   const [promedioResenas, setPromedioResenas] = useState<number>(0);
   const [totalResenas, setTotalResenas] = useState<number>(0);
 
-  const [serviciosDisponibles, setServiciosDisponibles] = useState<any[]>([]);
+  const [serviciosDisponibles, setServiciosDisponibles] = useState<ServicioAdicional[]>([]);
   const [serviciosSeleccionados, setServiciosSeleccionados] = useState<{ [key: number]: number }>({});
   const [costoServicios, setCostoServicios] = useState<number>(0);
   const [mostrarServicios, setMostrarServicios] = useState(false);
-  const [servicioDetalleModal, setServicioDetalleModal] = useState<any>(null);
+  const [servicioDetalleModal, setServicioDetalleModal] = useState<ServicioAdicional | null>(null);
 
   const [costoAforoExtra, setCostoAforoExtra] = useState<number>(0);
   const [personasExtra, setPersonasExtra] = useState<number>(0);
@@ -43,7 +44,7 @@ const Reserva: React.FC = () => {
   // Modal Terms State
   const [mostrarTermsModal, setMostrarTermsModal] = useState(false);
   const [intencionReserva, setIntencionReserva] = useState<'ahora' | 'luego' | null>(null);
-  const [datosFacturacion, setDatosFacturacion] = useState<any>(null);
+  const [datosFacturacion, setDatosFacturacion] = useState<Record<string, string> | null>(null);
 
   // flujo Pago State
   const [mostrarModalPago, setMostrarModalPago] = useState(false);
@@ -69,7 +70,7 @@ const Reserva: React.FC = () => {
 
     // cargar información de precio real
     apiService.getEspacios().then(response => {
-      const esp = response.data.find((e: any) => e.id === espId);
+      const esp = response.data.find((e: Espacio) => e.id === espId);
       if (esp) {
         setEspacio(esp);
         const precioDia = Number(esp.precio) || 0;
@@ -83,7 +84,7 @@ const Reserva: React.FC = () => {
     }).catch(err => console.error(err));
 
     apiService.getServiciosAdicionales().then(res => {
-      setServiciosDisponibles(res.data.filter((s: any) => s.estado === true));
+      setServiciosDisponibles(res.data.filter((s: ServicioAdicional) => s.estado === true));
     }).catch(err => console.error(err));
   }, [id, navigate]);
 
@@ -171,7 +172,7 @@ const Reserva: React.FC = () => {
       
       setDiasReserva(diasEfectivos);
       
-      const descPorc = Number(espacio.descuento) || 0;
+      const descPorc = Number(espacio?.descuento) || 0;
       const descMonto = subtotal * (descPorc / 100);
       
       let totalSrv = 0;
@@ -187,9 +188,9 @@ const Reserva: React.FC = () => {
 
       let pExtra = 0;
       let cAforoExtra = 0;
-      if (espacio.capacidadEquipos && asistentes > espacio.capacidadEquipos && asistentes <= espacio.capacidad) {
-        pExtra = asistentes - espacio.capacidadEquipos;
-        const precioExtra = espacio.precioPersonaExtra || 0;
+      if (espacio?.capacidadEquipos && asistentes > espacio?.capacidadEquipos && asistentes <= espacio.capacidad) {
+        pExtra = asistentes - espacio?.capacidadEquipos;
+        const precioExtra = espacio?.precioPersonaExtra || 0;
         cAforoExtra = pExtra * precioExtra * diasEfectivos;
       }
       setPersonasExtra(pExtra);
@@ -259,7 +260,7 @@ const Reserva: React.FC = () => {
     setMostrarModalPago(false);
   };
 
-  const crearReservaPendiente = async (facturacion: any) => {
+  const crearReservaPendiente = async (facturacion: Record<string, string>) => {
     setErrorMessage('');
     setSuccessMessage('');
     setCargando(true);
@@ -285,9 +286,9 @@ const Reserva: React.FC = () => {
       setTimeout(() => {
         navigate('/mis-reservas');
       }, 2500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setCargando(false);
-      setErrorMessage(err.response?.data?.error || 'Error al guardar la reserva. Verifique disponibilidad.');
+      setErrorMessage((err as any).response?.data?.error || 'Error al guardar la reserva. Verifique disponibilidad.');
     }
   };
 
@@ -361,15 +362,15 @@ const Reserva: React.FC = () => {
         setTimeout(() => {
           navigate('/mis-reservas');
         }, 2500);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setCargando(false);
         setMostrarModalPago(false);
-        setErrorMessage('Reserva creada pero ' + (err.response?.data?.error || 'error al procesar el pago.'));
+        setErrorMessage('Reserva creada pero ' + ((err as any).response?.data?.error || 'error al procesar el pago.'));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setCargando(false);
       setMostrarModalPago(false);
-      setErrorMessage(err.response?.data?.error || 'Error al guardar la reserva. Verifique disponibilidad.');
+      setErrorMessage((err as any).response?.data?.error || 'Error al guardar la reserva. Verifique disponibilidad.');
     }
   };
 
@@ -383,7 +384,7 @@ const Reserva: React.FC = () => {
         <h2 className="text-gradient fw-bold mb-2">Confirmar Tu Reserva</h2>
         {espacio && (
           <div className="mb-4 text-muted small d-flex flex-column gap-1">
-            <span>Espacio: <strong>{espacio.nombreEspacio}</strong> (Capacidad: {espacio.capacidad} personas)</span>
+            <span>Espacio: <strong>{espacio?.nombreEspacio}</strong> (Capacidad: {espacio.capacidad} personas)</span>
             <span>Horario: <strong>{espacio.horaApertura || '08:00'} - {espacio.horaCierre || '20:00'}</strong></span>
             {totalResenas > 0 && (
               <span className="text-warning d-flex align-items-center gap-1">
@@ -454,7 +455,7 @@ const Reserva: React.FC = () => {
                 <div className="alert alert-warning border-0 p-2 mt-2 mb-0 small d-flex align-items-center">
                   <i className="bi bi-info-circle-fill me-2 fs-5"></i>
                   <span>
-                    El aforo base es de <strong>{espacio.capacidadEquipos} pers</strong>. 
+                    El aforo base es de <strong>{espacio?.capacidadEquipos} pers</strong>. 
                     Se ha añadido un cargo por <strong>{personasExtra} persona(s) extra</strong>.
                   </span>
                 </div>
@@ -545,14 +546,14 @@ const Reserva: React.FC = () => {
                   <span className="small text-muted">Tarifa por hora: S/. {precioHora.toFixed(2)}</span>
                 )}
                 {espacio && espacio.tipoEspacio?.id !== 1 && (
-                  <span className="small text-muted">Tarifa por día: S/. {espacio.precio}</span>
+                  <span className="text-gray-900 font-medium">{espacio?.ubicacion?.ciudad}, {espacio?.ubicacion?.pais}</span>
                 )}
               </div>
               <span className="text-dark fw-bold fs-5">S/. {subtotalOriginal.toFixed(2)}</span>
             </div>
             {descuentoMonto > 0 && (
               <div className="d-flex justify-content-between align-items-center mb-2">
-                <span className="text-success fw-bold">Descuento ({espacio.descuento}%)</span>
+                <span className="text-success fw-bold">Descuento ({espacio?.descuento}%)</span>
                 <span className="text-success fw-bold fs-5">- S/. {descuentoMonto.toFixed(2)}</span>
               </div>
             )}
@@ -587,7 +588,7 @@ const Reserva: React.FC = () => {
               <div className="d-flex justify-content-between align-items-center mb-2">
                 <div>
                   <span className="text-dark fw-bold d-block">Cargo por Aforo Extra <small className="fw-normal text-muted">(x{diasReserva} {diasReserva === 1 ? 'día' : 'días'})</small></span>
-                  <span className="text-muted small">{personasExtra} persona(s) x S/. {(espacio.precioPersonaExtra || 0).toFixed(2)} c/u / día</span>
+                  <span className="text-muted small">{personasExtra} persona(s) x S/. {(espacio?.precioPersonaExtra || 0).toFixed(2)} c/u / día</span>
                 </div>
                 <span className="text-dark fw-bold fs-5">+ S/. {costoAforoExtra.toFixed(2)}</span>
               </div>
@@ -623,10 +624,10 @@ const Reserva: React.FC = () => {
 
           <div className="d-flex gap-3 flex-wrap">
             <button type="button" className="btn btn-outline-secondary flex-grow-1 py-2 fw-semibold" onClick={cancelar}>Cancelar</button>
-            <button type="button" className="btn btn-outline-primary flex-grow-1 py-2 fw-semibold" onClick={() => intentarReserva('luego')} disabled={cargando || totalCalculado <= 0 || (espacio && asistentes > espacio.capacidad)}>
+            <button type="button" className="btn btn-outline-primary flex-grow-1 py-2 fw-semibold" onClick={() => intentarReserva('luego')} disabled={cargando || totalCalculado <= 0 || (espacio ? asistentes > espacio.capacidad : false)}>
               Reservar y Pagar Después
             </button>
-            <button type="submit" className="btn btn-primary-custom flex-grow-1 py-2 fw-semibold" disabled={cargando || totalCalculado <= 0 || (espacio && asistentes > espacio.capacidad)}>
+            <button type="submit" className="btn btn-primary-custom flex-grow-1 py-2 fw-semibold" disabled={cargando || totalCalculado <= 0 || (espacio ? asistentes > espacio.capacidad : false)}>
               Pagar Ahora
             </button>
           </div>

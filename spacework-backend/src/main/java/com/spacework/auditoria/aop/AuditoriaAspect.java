@@ -29,7 +29,10 @@ public class AuditoriaAspect {
         Object[] args = joinPoint.getArgs();
         String detalles = "Método: " + joinPoint.getSignature().getName();
         if (args != null && args.length > 0) {
-            detalles += " | Argumentos: " + Arrays.toString(args);
+            String argsStr = Arrays.toString(args);
+            // Sanitizar posibles contraseñas en los logs
+            argsStr = argsStr.replaceAll("(?i)contrase[nñ]a[=:][\\s'\"]*[^,}\\]]+", "contrasena=***FILTRADO***");
+            detalles += " | Argumentos: " + argsStr;
         }
 
         auditoriaService.registrarAuditoria(accion, entidad, detalles);

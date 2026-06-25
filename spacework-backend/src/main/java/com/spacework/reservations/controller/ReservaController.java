@@ -171,13 +171,25 @@ public class ReservaController {
      * TODO: Optimizar esto, puede causar un problema de N+1 queries si hay muchas reservas.
      */
     private void enriquecerConPrecio(List<Reserva> reservas) {
+        List<Integer> espacioIds = reservas.stream()
+                .filter(r -> r.getEspacio() != null)
+                .map(r -> r.getEspacio().getId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (espacioIds.isEmpty()) return;
+
+        List<com.spacework.reservations.model.Precio> precios = precioRepository.findByEspacioIdInAndEstadoTrue(espacioIds);
+        Map<Integer, com.spacework.reservations.model.Precio> precioMap = precios.stream()
+                .collect(Collectors.toMap(p -> p.getEspacio().getId(), p -> p, (p1, p2) -> p1));
+
         for (Reserva r : reservas) {
             if (r.getEspacio() != null) {
-                precioRepository.findFirstByEspacioIdAndEstadoTrue(r.getEspacio().getId())
-                        .ifPresent(p -> {
-                            r.getEspacio().setPrecio(p.getMonto());
-                            r.getEspacio().setDescuento(p.getDescuento());
-                        });
+                com.spacework.reservations.model.Precio p = precioMap.get(r.getEspacio().getId());
+                if (p != null) {
+                    r.getEspacio().setPrecio(p.getMonto());
+                    r.getEspacio().setDescuento(p.getDescuento());
+                }
             }
         }
     }

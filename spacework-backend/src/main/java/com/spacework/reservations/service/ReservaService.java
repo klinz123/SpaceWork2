@@ -6,6 +6,8 @@ import com.spacework.reservations.model.Reserva;
 import com.spacework.crm.model.Usuario;
 import com.spacework.reservations.repository.EstadoReservaRepository;
 import com.spacework.reservations.repository.ReservaRepository;
+import com.spacework.reservations.repository.PrecioRepository;
+import com.spacework.reservations.model.Precio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,18 +31,21 @@ public class ReservaService {
     private final EmailService emailService;
     private final ServicioAdicionalRepository servicioAdicionalRepository;
     private final ReservaServicioRepository reservaServicioRepository;
+    private final PrecioRepository precioRepository;
 
     @Autowired
     public ReservaService(ReservaRepository reservaRepository, 
                           EstadoReservaRepository estadoReservaRepository,
                           EmailService emailService,
                           ServicioAdicionalRepository servicioAdicionalRepository,
-                          ReservaServicioRepository reservaServicioRepository) {
+                          ReservaServicioRepository reservaServicioRepository,
+                          PrecioRepository precioRepository) {
         this.reservaRepository = reservaRepository;
         this.estadoReservaRepository = estadoReservaRepository;
         this.emailService = emailService;
         this.servicioAdicionalRepository = servicioAdicionalRepository;
         this.reservaServicioRepository = reservaServicioRepository;
+        this.precioRepository = precioRepository;
     }
 
     @Transactional
@@ -72,6 +77,9 @@ public class ReservaService {
         EstadoReserva estado = estadoReservaRepository.findByNombreEstado("PENDIENTE")
                 .orElseThrow(() -> new IllegalStateException("Estado PENDIENTE no configurado en la base de datos."));
 
+        // Calculamos el precio real en el backend, ignorando el montoTotal del frontend por seguridad
+        BigDecimal montoCalculadoSeguro = calcularMontoSeguro(espacio, inicio, fin, observaciones, serviciosAdicionales);
+
         // Armamos el objeto de la reserva
         Reserva reserva = new Reserva();
         reserva.setCodigoReserva("RES-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
@@ -79,7 +87,8 @@ public class ReservaService {
         reserva.setEspacio(espacio);
         reserva.setFechaInicioReserva(inicio);
         reserva.setFechaFinReserva(fin);
-        reserva.setMontoTotal(montoTotal);
+        reserva.setMontoTotal(montoCalculadoSeguro);
+        
         if (descuentoAplicado != null) {
             reserva.setDescuentoAplicado(descuentoAplicado);
         } else {
@@ -137,6 +146,74 @@ public class ReservaService {
         emailService.sendEmail(usuario.getCorreoElectronico(), subject, body);
 
         return nuevaReserva;
+    }
+
+    private BigDecimal calcularMontoSeguro(Espacio espacio, LocalDateTime inicio, LocalDateTime fin, String observaciones, Map<Integer, Integer> serviciosAdicionales) {
+        Precio precioObj = precioRepository.findFirstByEspacioIdAndEstadoTrue(espacio.getId()).orElse(null);
+        BigDecimal precioBase = precioObj != null && precioObj.getMonto() != null ? precioObj.getMonto() : BigDecimal.ZERO;
+        BigDecimal descBase = precioObj != null && precioObj.getDescuento() != null ? precioObj.getDescuento() : BigDecimal.ZERO;
+
+        long diffMs = java.time.Duration.between(inicio, fin).toMillis();
+        long diffDaysExact = diffMs / (1000 * 60 * 60 * 24);
+        long diffDays = diffDaysExact;
+        long remainder = diffMs % (1000L * 60 * 60 * 24);
+
+        if (remainder > 0) {
+            double endHour = fin.getHour() + (fin.getMinute() / 60.0);
+            if (endHour >= 12) diffDays += 1;
+            else if (diffDays == 0) diffDays = 1;
+        }
+        if (diffDays == 0) diffDays = 1;
+        long diasEfectivos = diffDays;
+
+        BigDecimal subtotal = BigDecimal.ZERO;
+        if (espacio.getTipoEspacio() != null && espacio.getTipoEspacio().getId() == 1) {
+            double horasACobrar = diffMs / (1000.0 * 60 * 60);
+            double startHour = inicio.getHour() + (inicio.getMinute() / 60.0);
+            double endHour = fin.getHour() + (fin.getMinute() / 60.0);
+            boolean isSameDay = inicio.toLocalDate().equals(fin.toLocalDate());
+            
+            if (isSameDay && startHour < 12 && endHour >= 12) {
+                horasACobrar = 8;
+                diasEfectivos = 1;
+            }
+            BigDecimal precioH = precioBase.compareTo(BigDecimal.ZERO) > 0 ? precioBase.divide(BigDecimal.valueOf(8), 2, java.math.RoundingMode.HALF_UP) : BigDecimal.ZERO;
+            subtotal = precioH.multiply(BigDecimal.valueOf(horasACobrar));
+        } else {
+            subtotal = precioBase.multiply(BigDecimal.valueOf(diasEfectivos));
+        }
+
+        BigDecimal descMonto = subtotal.multiply(descBase).divide(BigDecimal.valueOf(100));
+
+        BigDecimal totalSrv = BigDecimal.ZERO;
+        if (serviciosAdicionales != null) {
+            for (Map.Entry<Integer, Integer> entry : serviciosAdicionales.entrySet()) {
+                if (entry.getValue() > 0) {
+                    ServicioAdicional sa = servicioAdicionalRepository.findById(entry.getKey()).orElse(null);
+                    if (sa != null) {
+                        totalSrv = totalSrv.add(sa.getPrecioBase().multiply(BigDecimal.valueOf(entry.getValue())).multiply(BigDecimal.valueOf(diasEfectivos)));
+                    }
+                }
+            }
+        }
+
+        int asistentes = 1;
+        if (observaciones != null && observaciones.contains("Asistentes: ")) {
+            String[] parts = observaciones.split("Asistentes: ");
+            if (parts.length > 1) {
+                try { asistentes = Integer.parseInt(parts[1].trim().split(" ")[0]); } 
+                catch (Exception ignored) {}
+            }
+        }
+
+        BigDecimal costoAforoExtra = BigDecimal.ZERO;
+        if (espacio.getCapacidadEquipos() != null && asistentes > espacio.getCapacidadEquipos() && asistentes <= espacio.getCapacidad()) {
+            int pExtra = asistentes - espacio.getCapacidadEquipos();
+            BigDecimal precioExtra = BigDecimal.valueOf(espacio.getPrecioPersonaExtra() != null ? espacio.getPrecioPersonaExtra() : 0.0);
+            costoAforoExtra = precioExtra.multiply(BigDecimal.valueOf(pExtra)).multiply(BigDecimal.valueOf(diasEfectivos));
+        }
+
+        return subtotal.subtract(descMonto).add(totalSrv).add(costoAforoExtra);
     }
 
     @Transactional

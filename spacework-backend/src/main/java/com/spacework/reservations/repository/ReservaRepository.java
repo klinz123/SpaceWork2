@@ -14,6 +14,7 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
 
     List<Reserva> findByUsuarioId(Integer usuarioId);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM Reserva r WHERE r.espacio = :espacio " +
            "AND r.fechaInicioReserva < :fechaFin " +
            "AND r.fechaFinReserva > :fechaInicio " +

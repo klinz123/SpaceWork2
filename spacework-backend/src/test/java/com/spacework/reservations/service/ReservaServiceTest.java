@@ -34,6 +34,15 @@ public class ReservaServiceTest {
     @Mock
     private EmailService emailService;
 
+    @Mock
+    private com.spacework.reservations.repository.PrecioRepository precioRepository;
+
+    @Mock
+    private com.spacework.reservations.repository.ServicioAdicionalRepository servicioAdicionalRepository;
+
+    @Mock
+    private com.spacework.reservations.repository.ReservaServicioRepository reservaServicioRepository;
+
     @InjectMocks
     private ReservaService reservaService;
 
@@ -80,6 +89,10 @@ public class ReservaServiceTest {
         mockSavedReserva.setFechaFinReserva(fin);
         mockSavedReserva.setMontoTotal(new BigDecimal("100.00"));
         mockSavedReserva.setEstadoReserva(estadoPendiente);
+
+        com.spacework.reservations.model.Precio precioMock = new com.spacework.reservations.model.Precio();
+        precioMock.setMonto(new BigDecimal("200.00"));
+        when(precioRepository.findFirstByEspacioIdAndEstadoTrue(espacio.getId())).thenReturn(Optional.of(precioMock));
 
         when(reservaRepository.save(any(Reserva.class))).thenReturn(mockSavedReserva);
 

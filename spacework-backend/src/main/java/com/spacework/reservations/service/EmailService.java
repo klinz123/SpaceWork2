@@ -7,6 +7,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import org.springframework.scheduling.annotation.Async;
+
 @Service
 public class EmailService {
 
@@ -19,6 +21,7 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
+    @Async
     public void sendEmail(String to, String subject, String body) {
         logger.info("Preparando envío de correo simulado/real a: {} con asunto: '{}'", to, subject);
         try {

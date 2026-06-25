@@ -15,7 +15,9 @@ import java.util.Map;
 @Component
 public class JwtTokenProvider {
 
-    private final String secretString = "spaceworkSecretKeyForJWTSecurity2026Token!";
+    private final String secretString = System.getenv("JWT_SECRET") != null 
+            ? System.getenv("JWT_SECRET") 
+            : "spaceworkSecretKeyForJWTSecurity2026Token!";
     private final SecretKey key = Keys.hmacShaKeyFor(secretString.getBytes(StandardCharsets.UTF_8));
     private final long validityInMilliseconds = 86400000; // 24 hours
 

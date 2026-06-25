@@ -20,9 +20,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 import java.time.LocalDateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class ResetPasswordRunner implements CommandLineRunner {
+
+    private static final Logger logger = LoggerFactory.getLogger(ResetPasswordRunner.class);
+    private boolean yaEjecutado = false;
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
@@ -54,7 +59,10 @@ public class ResetPasswordRunner implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        System.out.println("\n--- VERIFICANDO Y CREANDO USUARIOS DE PRUEBA ---");
+        if (yaEjecutado) return;
+        yaEjecutado = true;
+        
+        logger.info("--- VERIFICANDO Y CREANDO USUARIOS DE PRUEBA ---");
         
         Rol rolAdmin = asegurarRol("ADMIN", "Administrador normal");
         Rol rolSuperAdmin = asegurarRol("SUPERADMIN", "Super Administrador");
@@ -66,9 +74,9 @@ public class ResetPasswordRunner implements CommandLineRunner {
         asegurarUsuario("superadmin@spacework.com", "Super", "Admin", "123456", rolSuperAdmin, "99999999", dni);
         asegurarUsuario("cliente@spacework.com", "Juan", "Cliente", "123456", rolCliente, "44444444", dni);
 
-        System.out.println("--- TODOS LOS USUARIOS LISTOS (Contraseña: 123456) ---\n");
+        logger.info("--- TODOS LOS USUARIOS LISTOS (Contraseña: 123456) ---");
 
-        System.out.println("--- CONFIGURANDO ESTADOS DE RESERVA Y PAGOS ---");
+        logger.info("--- CONFIGURANDO ESTADOS DE RESERVA Y PAGOS ---");
         asegurarEstadoReserva("PENDIENTE", "Reserva creada pero pendiente de confirmación/pago");
         asegurarEstadoReserva("CONFIRMADA", "Reserva pagada y confirmada");
         asegurarEstadoReserva("FINALIZADA", "La reserva ha concluido exitosamente");
@@ -77,11 +85,11 @@ public class ResetPasswordRunner implements CommandLineRunner {
         asegurarFormaPago("TARJETA", "Pago con Tarjeta de Crédito/Débito");
         asegurarFormaPago("EFECTIVO", "Pago en Efectivo");
         asegurarFormaPago("TRANSFERENCIA", "Transferencia Bancaria");
-        System.out.println("--- ESTADOS CONFIGURADOS ---\n");
+        logger.info("--- ESTADOS CONFIGURADOS ---");
 
-        System.out.println("--- CONFIGURANDO FOTOS DE ESPACIOS ---");
+        logger.info("--- CONFIGURANDO FOTOS DE ESPACIOS ---");
         asegurarFotosEspacios();
-        System.out.println("--- FOTOS CONFIGURADAS ---\n");
+        logger.info("--- FOTOS CONFIGURADAS ---");
     }
 
     private void asegurarFotosEspacios() {
@@ -161,6 +169,6 @@ public class ResetPasswordRunner implements CommandLineRunner {
         u.setIntentosFallidos(0);
         
         usuarioRepository.save(u);
-        System.out.println("OK: " + correo);
+        logger.info("OK: {}", correo);
     }
 }

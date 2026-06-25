@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -44,7 +44,7 @@ api.interceptors.response.use((response) => {
 
 export const apiService = {
   // auth Endpoints
-  registro: (usuario: any, rol: string = 'USUARIO', tipoDoc: string = 'DNI') => {
+  registro: (usuario: Record<string, unknown>, rol: string = 'USUARIO', tipoDoc: string = 'DNI') => {
     return api.post(`/auth/registro?rol=${rol}&tipoDoc=${tipoDoc}`, usuario);
   },
   login: (correo: string, contrasena: string) => {
@@ -53,8 +53,8 @@ export const apiService = {
 
   // users Endpoints
   getUsuarios: () => api.get(`/usuarios`),
-  actualizarPerfil: (id: number, data: any) => api.put(`/usuarios/${id}`, data),
-  actualizarMiembro: (id: number, data: any, nombreRol: string) => api.put(`/usuarios/admin/${id}?nombreRol=${nombreRol}`, data),
+  actualizarPerfil: (id: number, data: Record<string, unknown>) => api.put(`/usuarios/${id}`, data),
+  actualizarMiembro: (id: number, data: Record<string, unknown>, nombreRol: string) => api.put(`/usuarios/admin/${id}?nombreRol=${nombreRol}`, data),
   desbloquearMiembro: (id: number) => api.put(`/usuarios/admin/${id}/desbloquear`),
   eliminarMiembro: (id: number) => api.delete(`/usuarios/${id}`),
   cambiarContrasena: (id: number, contrasenaActual: string, nuevaContrasena: string) => 
@@ -63,8 +63,8 @@ export const apiService = {
 
   // CRM Endpoints
   getEmpresas: () => api.get(`/empresas`),
-  crearEmpresa: (empresaData: any) => api.post(`/empresas`, empresaData),
-  updateEmpresa: (id: number, empresaData: any) => api.put(`/empresas/${id}`, empresaData),
+  crearEmpresa: (empresaData: Record<string, unknown>) => api.post(`/empresas`, empresaData),
+  updateEmpresa: (id: number, empresaData: Record<string, unknown>) => api.put(`/empresas/${id}`, empresaData),
   deleteEmpresa: (id: number) => api.delete(`/empresas/${id}`),
 
   // Billing Endpoints
@@ -75,31 +75,31 @@ export const apiService = {
   getEspaciosFiltrados: (tipoEspacioId: number) => api.get(`/espacios/filtrar?tipoEspacioId=${tipoEspacioId}`),
   getTiposEspacio: () => api.get(`/espacios/tipos`),
   getUbicaciones: () => api.get(`/ubicaciones`),
-  crearUbicacion: (data: any) => api.post(`/ubicaciones`, data),
-  updateUbicacion: (id: number, data: any) => api.put(`/ubicaciones/${id}`, data),
+  crearUbicacion: (data: Record<string, unknown>) => api.post(`/ubicaciones`, data),
+  updateUbicacion: (id: number, data: Record<string, unknown>) => api.put(`/ubicaciones/${id}`, data),
   deleteUbicacion: (id: number) => api.delete(`/ubicaciones/${id}`),
 
   getCaracteristicas: () => api.get(`/caracteristicas`),
-  crearCaracteristica: (data: any) => api.post(`/caracteristicas`, data),
-  updateCaracteristica: (id: number, data: any) => api.put(`/caracteristicas/${id}`, data),
+  crearCaracteristica: (data: Record<string, unknown>) => api.post(`/caracteristicas`, data),
+  updateCaracteristica: (id: number, data: Record<string, unknown>) => api.put(`/caracteristicas/${id}`, data),
   deleteCaracteristica: (id: number) => api.delete(`/caracteristicas/${id}`),
-  crearEspacio: (espacioData: any) => api.post(`/espacios`, espacioData),
-  actualizarEspacio: (id: number, espacioData: any) => api.put(`/espacios/${id}`, espacioData),
+  crearEspacio: (espacioData: Record<string, unknown>) => api.post(`/espacios`, espacioData),
+  actualizarEspacio: (id: number, espacioData: Record<string, unknown>) => api.put(`/espacios/${id}`, espacioData),
   eliminarEspacio: (id: number) => api.delete(`/espacios/${id}`),
 
   // reservations Endpoints
-  crearReserva: (reservaData: any) => api.post(`/reservas/crear`, reservaData),
+  crearReserva: (reservaData: Record<string, unknown>) => api.post(`/reservas/crear`, reservaData),
   getReservasPorUsuario: (usuarioId: number) => api.get(`/reservas/usuario/${usuarioId}`),
   getTodasReservas: () => api.get(`/reservas`),
   getServiciosAdicionales: () => api.get(`/servicios-adicionales`),
-  crearServicioAdicional: (data: any) => api.post(`/servicios-adicionales`, data),
-  updateServicioAdicional: (id: number, data: any) => api.put(`/servicios-adicionales/${id}`, data),
+  crearServicioAdicional: (data: Record<string, unknown>) => api.post(`/servicios-adicionales`, data),
+  updateServicioAdicional: (id: number, data: Record<string, unknown>) => api.put(`/servicios-adicionales/${id}`, data),
   deleteServicioAdicional: (id: number) => api.delete(`/servicios-adicionales/${id}`),
-  agregarServicioExtraReserva: (id: number, data: any) => api.post(`/reservas/${id}/agregar-servicio`, data),
+  agregarServicioExtraReserva: (id: number, data: unknown[]) => api.post(`/reservas/${id}/agregar-servicio`, data),
   cancelarReserva: (id: number) => api.put(`/reservas/${id}/cancelar`),
 
   // payments Endpoints
-  procesarPago: (pagoData: any) => api.post(`/pagos/procesar`, pagoData),
+  procesarPago: (pagoData: Record<string, unknown>) => api.post(`/pagos/procesar`, pagoData),
   getTodosPagos: () => api.get(`/pagos`),
   aprobarPago: (id: number) => api.put(`/pagos/${id}/aprobar`),
 
@@ -107,7 +107,7 @@ export const apiService = {
   descargarReporteExcel: () => api.get(`/reportes/excel`, { responseType: 'blob' }),
 
   // Reseñas Endpoints
-  crearResena: (resenaData: any) => api.post(`/resenas`, resenaData),
+  crearResena: (resenaData: Record<string, unknown>) => api.post(`/resenas`, resenaData),
   getPromedioEspacio: (espacioId: number) => api.get(`/resenas/espacio/${espacioId}`),
   chequearResenaReserva: (reservaId: number) => api.get(`/resenas/reserva/${reservaId}`),
   getResenasDashboard: () => api.get(`/resenas/admin/dashboard`),
